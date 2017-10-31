@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react'
+import { Dimensions } from 'react-native'
 import getLatest from './utils/getLatest'
 import getChapters from './utils/getChapters'
 import getPages from './utils/getPages'
@@ -14,6 +15,9 @@ import {
   TouchableWithoutFeedback
 } from 'react-native'
 import Swiper from 'react-native-swiper'
+
+const dimensions = Dimensions.get('window')
+const columns = dimensions.width < 512 ? 3 : 4
 
 const styles = {
   base: {
@@ -54,10 +58,24 @@ const styles = {
     right: 0,
     backgroundColor: '#333'
   },
-  chaptersImage: {
-    width: '100%',
-    aspectRatio: 1
+  chaptersHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#1a1a1a',
+    height: 'auto'
   },
+  chaptersDescription: {
+    width: `${100 - 100 / columns}%`,
+    padding: 16
+  },
+  chaptersDescriptionText: {
+    color: '#fff',
+    paddingBottom: 16
+  },
+  chaptersImage: {
+    width: `${100 / columns}%`,
+    aspectRatio: 0.642857143
+  },
+  chaptersList: {},
   chapter: {
     padding: 16,
     backgroundColor: '#333',
@@ -135,7 +153,7 @@ class Mangas extends PureComponent {
     return (
       <FlatList
         style={styles.mangas}
-        numColumns={4}
+        numColumns={columns}
         data={mangas}
         keyExtractor={this.getKey}
         refreshing={refreshing}
@@ -178,14 +196,20 @@ class Chapters extends PureComponent {
   )
 
   render () {
-    const { manga, chapters, onClose, onLoad } = this.props
-
+    const { manga, chapters, tags, summary, onClose, onLoad } = this.props
     return (
       <View style={styles.chapters}>
-        <TouchableWithoutFeedback onPress={onClose}>
-          <Image style={styles.chaptersImage} source={{uri: manga.cover}} />
-        </TouchableWithoutFeedback>
+        <View style={styles.chaptersHeader}>
+          <TouchableWithoutFeedback onPress={onClose}>
+            <Image style={styles.chaptersImage} source={{uri: manga.cover}} />
+          </TouchableWithoutFeedback>
+          <View style={styles.chaptersDescription}>
+            <Text style={styles.chaptersDescriptionText}>{summary}</Text>
+            <Text style={styles.chaptersDescriptionText}>{tags.join(', ')}</Text>
+          </View>
+        </View>
         <FlatList
+          style={styles.chaptersList}
           data={chapters}
           keyExtractor={this.getKey}
           refreshing={chapters.length === 0}
@@ -287,6 +311,8 @@ class App extends PureComponent {
     chapter: null,
     mangas: [],
     chapters: [],
+    tags: [],
+    summary: null,
     pages: []
   }
 
@@ -295,7 +321,7 @@ class App extends PureComponent {
   }
 
   render () {
-    const { refreshing, manga, chapter, mangas, chapters, pages } = this.state
+    const { refreshing, manga, chapter, mangas, chapters, tags, summary, pages } = this.state
     return (
       <View
         style={styles.base}
@@ -315,6 +341,8 @@ class App extends PureComponent {
               <Chapters
                 manga={manga}
                 chapters={chapters}
+                tags={tags}
+                summary={summary}
                 onClose={this.handleDeselectManga}
                 onSelect={this.handleSelectChapter}
                 onLoad={this.handleLoadedChapters}
@@ -371,13 +399,13 @@ class App extends PureComponent {
     )
   }
 
-  handleLoadedChapters = (chapters) => this.setState({ chapters })
+  handleLoadedChapters = ({ chapters, tags, summary }) => this.setState({ chapters, tags, summary })
 
   handleLoadedPages = (pages) => this.setState({ pages })
 
   handleSelectManga = (manga) => () => this.setState({ manga })
 
-  handleDeselectManga = () => this.setState({manga: null, chapters: []})
+  handleDeselectManga = () => this.setState({manga: null, chapters: [], tags: [], summary: null})
 
   handleSelectChapter = (chapter) => () => this.setState({ chapter })
 
