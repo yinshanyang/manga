@@ -13,7 +13,9 @@ import {
   Modal,
   TouchableWithoutFeedback
 } from 'react-native'
-import Swiper from 'react-native-swiper'
+import Swipeable from 'react-swipeable-views-native'
+import { virtualize } from 'react-swipeable-views-utils'
+const VirtualizedSwipeable = virtualize(Swipeable)
 
 const styles = {
   base: {
@@ -213,31 +215,43 @@ class Chapter extends PureComponent {
 }
 
 class Pages extends PureComponent {
+  state = {
+    index: null
+  }
+
   componentWillMount () {
     const { chapter, onLoad } = this.props
     getPages(chapter.link, onLoad)
   }
 
+  componentWillUpdate ({ pages }) {
+    if (pages.length && this.state.index === null) this.handleLoaded()
+  }
+
+  renderPage = ({ key, index }) => {
+    const { pages } = this.props
+    const page = pages[index]
+    return (
+      <Page key={key} page={page} />
+    )
+  }
+
   render () {
+    const { index } = this.state
     const { chapter, pages, onClose } = this.props
     return (
       <View style={styles.pages}>
         {
-          pages.length
+          index !== null
           ? (
-            <Swiper
+            <VirtualizedSwipeable
               loop={false}
-              index={pages.length - 1}
-              paginationStyle={styles.pagesPagination}
-              dotStyle={styles.pagesDot}
-              activeDotStyle={styles.pagesDotActive}
-            >
-              {
-                pages.map((page, index) => (
-                  <Page key={index} page={page} />
-                ))
-              }
-            </Swiper>
+              axis='x-reverse'
+              index={index}
+              slideCount={pages.length}
+              slideRenderer={this.renderPage}
+              onChangeIndex={this.handleChange}
+            />
           )
           : null
         }
@@ -247,6 +261,10 @@ class Pages extends PureComponent {
       </View>
     )
   }
+
+  handleChange = (index) => this.setState({ index })
+
+  handleLoaded = () => this.setState({index: this.props.pages.length - 1})
 }
 
 class Page extends PureComponent {
