@@ -1,5 +1,15 @@
 {
   "expo": {
-    "sdkVersion": "21.0.0"
+    "name": "Manga",
+    "icon": "./icon.png",
+    "version": "1.0.0",
+    "slug": "manga",
+    "sdkVersion": "21.0.0",
+    "ios": {
+      "bundleIdentifier": "com.yinshanyang.manga"
+    },
+    "android": {
+      "package": "com.yinshanyang.manga"
+    }
   }
 }
