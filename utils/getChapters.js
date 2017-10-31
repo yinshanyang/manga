@@ -8,11 +8,15 @@ const getChapters = (url, callback) =>
       const chapters = $('.chlist a')
         .map((index, el) => ({
           key: $(el).attr('href'),
-          title: $(el).text().match(/[0-9]+/)[0] || '0',
-          link: $(el).attr('href').replace(/^\/\//, 'https://')
+          link: $(el).attr('href').replace(/^\/\//, 'https://'),
+          title: $(el).text().match(/[0-9]+/)[0] || '0'
         }))
         .get()
-      return chapters
+      const tags = $('.manga-genres li')
+        .map((index, el) => $(el).text().trim())
+        .get()
+      const summary = $('.manga-summary').text().trim()
+      return { chapters, tags, summary }
     })
     .then((d) => callback(d))
 

@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react'
+import { Dimensions } from 'react-native'
 import getLatest from './utils/getLatest'
 import getChapters from './utils/getChapters'
 import getPages from './utils/getPages'
@@ -7,13 +8,16 @@ import getImage from './utils/getImage'
 import {
   StatusBar,
   FlatList,
+  ScrollView,
   View,
   Text,
   Image,
-  Modal,
   TouchableWithoutFeedback
 } from 'react-native'
-import Swiper from 'react-native-swiper'
+import IScrollView from 'react-native-invertible-scroll-view'
+
+const dimensions = Dimensions.get('window')
+const columns = dimensions.width < 512 ? 3 : 4
 
 const styles = {
   base: {
@@ -54,10 +58,24 @@ const styles = {
     right: 0,
     backgroundColor: '#333'
   },
-  chaptersImage: {
-    width: '100%',
-    aspectRatio: 1
+  chaptersHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#1a1a1a',
+    height: 'auto'
   },
+  chaptersDescription: {
+    width: `${100 - 100 / columns}%`,
+    padding: 16
+  },
+  chaptersDescriptionText: {
+    color: '#fff',
+    paddingBottom: 16
+  },
+  chaptersImage: {
+    width: `${100 / columns}%`,
+    aspectRatio: 0.642857143
+  },
+  chaptersList: {},
   chapter: {
     padding: 16,
     backgroundColor: '#333',
@@ -85,40 +103,17 @@ const styles = {
     color: 'rgba(0, 0, 0, 0)',
     backgroundColor: 'transparent'
   },
-  pagesPagination: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0
-  },
-  pagesDot: {
+  pagesList: {
     flex: 1,
     width: '100%',
-    height: 3,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    marginTop: 0,
-    marginBottom: 0,
-    marginLeft: 0,
-    marginRight: 0,
-    borderRadius: 0
-  },
-  pagesDotActive: {
-    flex: 1,
-    width: '100%',
-    height: 3,
-    backgroundColor: 'rgba(255, 128, 0, 1)',
-    marginTop: 0,
-    marginBottom: 0,
-    marginLeft: 0,
-    marginRight: 0,
-    borderRadius: 0
+    height: '100%'
   },
   page: {
+    ...dimensions,
     flex: 1
   },
   pageImage: {
-    width: '100%',
-    height: '100%'
+    ...dimensions
   }
 }
 
@@ -135,7 +130,7 @@ class Mangas extends PureComponent {
     return (
       <FlatList
         style={styles.mangas}
-        numColumns={4}
+        numColumns={columns}
         data={mangas}
         keyExtractor={this.getKey}
         refreshing={refreshing}
@@ -178,14 +173,20 @@ class Chapters extends PureComponent {
   )
 
   render () {
-    const { manga, chapters, onClose, onLoad } = this.props
-
+    const { manga, chapters, tags, summary, onClose, onLoad } = this.props
     return (
       <View style={styles.chapters}>
-        <TouchableWithoutFeedback onPress={onClose}>
-          <Image style={styles.chaptersImage} source={{uri: manga.cover}} />
-        </TouchableWithoutFeedback>
+        <View style={styles.chaptersHeader}>
+          <TouchableWithoutFeedback onPress={onClose}>
+            <Image style={styles.chaptersImage} source={{uri: manga.cover}} />
+          </TouchableWithoutFeedback>
+          <View style={styles.chaptersDescription}>
+            <Text style={styles.chaptersDescriptionText}>{summary}</Text>
+            <Text style={styles.chaptersDescriptionText}>{tags.join(', ')}</Text>
+          </View>
+        </View>
         <FlatList
+          style={styles.chaptersList}
           data={chapters}
           keyExtractor={this.getKey}
           refreshing={chapters.length === 0}
@@ -225,19 +226,19 @@ class Pages extends PureComponent {
         {
           pages.length
           ? (
-            <Swiper
-              loop={false}
-              index={pages.length - 1}
-              paginationStyle={styles.pagesPagination}
-              dotStyle={styles.pagesDot}
-              activeDotStyle={styles.pagesDotActive}
+            <IScrollView
+              style={styles.pagesList}
+              horizontal
+              directionalLockEnabled
+              pagingEnabled
+              inverted
             >
               {
                 pages.map((page, index) => (
                   <Page key={index} page={page} />
                 ))
               }
-            </Swiper>
+            </IScrollView>
           )
           : null
         }
@@ -262,7 +263,14 @@ class Page extends PureComponent {
   render () {
     const { image } = this.state
     return (
-      <View style={styles.page}>
+      <ScrollView
+        style={styles.page}
+        bouncesZoom
+        centerContent
+        maximumZoomScale={3}
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
+      >
         {
           image
             ? (
@@ -274,7 +282,7 @@ class Page extends PureComponent {
             )
             : null
         }
-      </View>
+      </ScrollView>
     )
   }
 }
@@ -287,6 +295,8 @@ class App extends PureComponent {
     chapter: null,
     mangas: [],
     chapters: [],
+    tags: [],
+    summary: null,
     pages: []
   }
 
@@ -295,7 +305,7 @@ class App extends PureComponent {
   }
 
   render () {
-    const { refreshing, manga, chapter, mangas, chapters, pages } = this.state
+    const { refreshing, manga, chapter, mangas, chapters, tags, summary, pages } = this.state
     return (
       <View
         style={styles.base}
@@ -315,6 +325,8 @@ class App extends PureComponent {
               <Chapters
                 manga={manga}
                 chapters={chapters}
+                tags={tags}
+                summary={summary}
                 onClose={this.handleDeselectManga}
                 onSelect={this.handleSelectChapter}
                 onLoad={this.handleLoadedChapters}
@@ -371,13 +383,13 @@ class App extends PureComponent {
     )
   }
 
-  handleLoadedChapters = (chapters) => this.setState({ chapters })
+  handleLoadedChapters = ({ chapters, tags, summary }) => this.setState({ chapters, tags, summary })
 
   handleLoadedPages = (pages) => this.setState({ pages })
 
   handleSelectManga = (manga) => () => this.setState({ manga })
 
-  handleDeselectManga = () => this.setState({manga: null, chapters: []})
+  handleDeselectManga = () => this.setState({manga: null, chapters: [], tags: [], summary: null})
 
   handleSelectChapter = (chapter) => () => this.setState({ chapter })
 

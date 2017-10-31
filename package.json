@@ -23,6 +23,6 @@
     "expo": "^21.0.0",
     "react": "16.0.0-alpha.12",
     "react-native": "^0.48.4",
-    "react-native-swiper": "^1.5.13"
+    "react-native-invertible-scroll-view": "^1.1.0"
   }
 }

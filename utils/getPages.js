@@ -10,7 +10,6 @@ const getPages = (url, callback) =>
         )
         .get()
     )
-    .then((pages) => pages.reverse())
     .then(callback)
 
 export default getPages
