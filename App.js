@@ -8,13 +8,13 @@ import getImage from './utils/getImage'
 import {
   StatusBar,
   FlatList,
+  ScrollView,
   View,
   Text,
   Image,
-  Modal,
   TouchableWithoutFeedback
 } from 'react-native'
-import Swiper from 'react-native-swiper'
+import IScrollView from 'react-native-invertible-scroll-view'
 
 const dimensions = Dimensions.get('window')
 const columns = dimensions.width < 512 ? 3 : 4
@@ -103,40 +103,17 @@ const styles = {
     color: 'rgba(0, 0, 0, 0)',
     backgroundColor: 'transparent'
   },
-  pagesPagination: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0
-  },
-  pagesDot: {
+  pagesList: {
     flex: 1,
     width: '100%',
-    height: 3,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    marginTop: 0,
-    marginBottom: 0,
-    marginLeft: 0,
-    marginRight: 0,
-    borderRadius: 0
-  },
-  pagesDotActive: {
-    flex: 1,
-    width: '100%',
-    height: 3,
-    backgroundColor: 'rgba(255, 128, 0, 1)',
-    marginTop: 0,
-    marginBottom: 0,
-    marginLeft: 0,
-    marginRight: 0,
-    borderRadius: 0
+    height: '100%'
   },
   page: {
+    ...dimensions,
     flex: 1
   },
   pageImage: {
-    width: '100%',
-    height: '100%'
+    ...dimensions
   }
 }
 
@@ -249,19 +226,19 @@ class Pages extends PureComponent {
         {
           pages.length
           ? (
-            <Swiper
-              loop={false}
-              index={pages.length - 1}
-              paginationStyle={styles.pagesPagination}
-              dotStyle={styles.pagesDot}
-              activeDotStyle={styles.pagesDotActive}
+            <IScrollView
+              style={styles.pagesList}
+              horizontal
+              directionalLockEnabled
+              pagingEnabled
+              inverted
             >
               {
                 pages.map((page, index) => (
                   <Page key={index} page={page} />
                 ))
               }
-            </Swiper>
+            </IScrollView>
           )
           : null
         }
@@ -286,7 +263,14 @@ class Page extends PureComponent {
   render () {
     const { image } = this.state
     return (
-      <View style={styles.page}>
+      <ScrollView
+        style={styles.page}
+        bouncesZoom
+        centerContent
+        maximumZoomScale={3}
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
+      >
         {
           image
             ? (
@@ -298,7 +282,7 @@ class Page extends PureComponent {
             )
             : null
         }
-      </View>
+      </ScrollView>
     )
   }
 }
