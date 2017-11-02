@@ -60,11 +60,16 @@ const styles = {
   },
   chaptersHeader: {
     flexDirection: 'row',
-    backgroundColor: '#1a1a1a',
-    height: 'auto'
+    backgroundColor: '#1a1a1a'
   },
   chaptersDescription: {
+    position: 'absolute',
     width: `${100 - 100 / columns}%`,
+    top: 0,
+    bottom: 0,
+    right: 0
+  },
+  chaptersDescriptionTextContainer: {
     padding: 16
   },
   chaptersDescriptionText: {
@@ -73,7 +78,8 @@ const styles = {
   },
   chaptersImage: {
     width: `${100 / columns}%`,
-    aspectRatio: 0.642857143
+    aspectRatio: 0.642857143,
+    backgroundColor: '#000'
   },
   chaptersList: {},
   chapter: {
@@ -180,10 +186,19 @@ class Chapters extends PureComponent {
           <TouchableWithoutFeedback onPress={onClose}>
             <Image style={styles.chaptersImage} source={{uri: manga.cover}} />
           </TouchableWithoutFeedback>
-          <View style={styles.chaptersDescription}>
-            <Text style={styles.chaptersDescriptionText}>{summary}</Text>
-            <Text style={styles.chaptersDescriptionText}>{tags.join(', ')}</Text>
-          </View>
+          <ScrollView contentContainerStyle={styles.chaptersDescriptionTextContainer} style={styles.chaptersDescription}>
+            {
+              summary
+                ? <Text style={styles.chaptersDescriptionText}>{summary}</Text>
+                : null
+            }
+            {
+              tags.length
+                ? <Text style={styles.chaptersDescriptionText}>{tags.join(', ')}</Text>
+                : null
+            }
+
+          </ScrollView>
         </View>
         <FlatList
           style={styles.chaptersList}
@@ -228,6 +243,7 @@ class Pages extends PureComponent {
           ? (
             <IScrollView
               style={styles.pagesList}
+              indicatorStyle='white'
               horizontal
               directionalLockEnabled
               pagingEnabled
@@ -267,6 +283,7 @@ class Page extends PureComponent {
         style={styles.page}
         bouncesZoom
         centerContent
+        directionalLockEnabled
         maximumZoomScale={3}
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
