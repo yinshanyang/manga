@@ -1,7 +1,7 @@
 import cheerio from 'cheerio-without-node-native'
 
 const getLatest = (page, callback) =>
-  fetch(`https://m.mangafox.me/latest/?page=${page}`)
+  fetch(`http://m.mangafox.me/latest/?page=${page}`)
     .then((response) => response.text())
     .then((text) => cheerio.load(text))
     .then(($) => {
@@ -10,7 +10,8 @@ const getLatest = (page, callback) =>
           key: $(el).find('a').attr('href'),
           title: $(el).find('img').attr('title'),
           cover: $(el).find('img').attr('src'),
-          link: $(el).find('a').attr('href')
+          link: $(el).find('a').attr('href'),
+          release: $(el).find('em').text()
         }))
         .get()
       return mangas

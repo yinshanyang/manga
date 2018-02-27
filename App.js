@@ -43,12 +43,25 @@ const styles = {
     position: 'absolute',
     left: 8,
     right: 8,
-    bottom: 8,
+    bottom: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     color: '#fff',
     fontSize: 16,
     textAlign: 'center',
-    fontWeight: '700'
+    fontWeight: '600'
+  },
+  mangaRelease: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    right: 8,
+    paddingLeft: 8,
+    paddingRight: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    color: '#fff',
+    fontSize: 10,
+    textAlign: 'center',
+    fontWeight: '400'
   },
   chapters: {
     position: 'absolute',
@@ -90,7 +103,7 @@ const styles = {
   },
   chapterText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#fff'
   },
   pages: {
@@ -159,6 +172,9 @@ class Manga extends PureComponent {
           <Image style={styles.mangaImage} source={{uri: manga.cover}} />
           <Text style={styles.mangaText}>
             {manga.title}
+          </Text>
+          <Text style={styles.mangaRelease}>
+            {manga.release.toUpperCase()}
           </Text>
         </View>
       </TouchableWithoutFeedback>
@@ -234,6 +250,10 @@ class Pages extends PureComponent {
     getPages(chapter.link, onLoad)
   }
 
+  renderPage = ({ item }) => (
+    <Page page={item} />
+  )
+
   render () {
     const { chapter, pages, onClose } = this.props
     return (
@@ -241,20 +261,16 @@ class Pages extends PureComponent {
         {
           pages.length
           ? (
-            <IScrollView
+            <FlatList
               style={styles.pagesList}
+              data={pages}
               indicatorStyle='white'
               horizontal
               directionalLockEnabled
               pagingEnabled
               inverted
-            >
-              {
-                pages.map((page, index) => (
-                  <Page key={index} page={page} />
-                ))
-              }
-            </IScrollView>
+              renderItem={this.renderPage}
+            />
           )
           : null
         }
