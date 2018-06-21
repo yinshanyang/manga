@@ -14,7 +14,6 @@ import {
   Image,
   TouchableWithoutFeedback
 } from 'react-native'
-import IScrollView from 'react-native-invertible-scroll-view'
 
 const dimensions = Dimensions.get('window')
 const columns = dimensions.width < 512 ? 3 : 4
@@ -27,41 +26,53 @@ const styles = {
   },
   mangas: {
     flex: 1,
-    backgroundColor: '#333333'
+    backgroundColor: '#1a1a1a'
   },
   manga: {
+    boxSizing: 'border-box',
+    position: 'relative',
+    margin: 3,
     flex: 1,
     aspectRatio: 0.642857143,
-    position: 'relative'
+    backgroundColor: '#000000'
   },
   mangaImage: {
     position: 'absolute',
+    top: 0,
+    left: 0,
     width: '100%',
     aspectRatio: 0.642857143
   },
+  mangaTextContainer: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)'
+  },
   mangaText: {
     position: 'absolute',
-    left: 8,
-    right: 8,
     bottom: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    left: 4,
+    right: 4,
+    display: 'block',
     color: '#fff',
-    fontSize: 16,
-    textAlign: 'center',
-    fontWeight: '600'
+    fontSize: 14,
+    lineHeight: 16,
+    textAlign: 'left',
+    fontWeight: '900'
   },
   mangaRelease: {
     position: 'absolute',
-    bottom: 8,
-    left: 8,
-    right: 8,
-    paddingLeft: 8,
-    paddingRight: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    bottom: 4,
+    left: 4,
+    display: 'block',
     color: '#fff',
     fontSize: 10,
-    textAlign: 'center',
-    fontWeight: '400'
+    lineHeight: 16,
+    textAlign: 'left',
+    fontWeight: '500'
   },
   chapters: {
     position: 'absolute',
@@ -83,15 +94,27 @@ const styles = {
     right: 0
   },
   chaptersDescriptionTextContainer: {
-    padding: 16
+    padding: 3,
+    paddingRight: 16
   },
   chaptersDescriptionText: {
     color: '#fff',
-    paddingBottom: 16
+    fontSize: 16,
+    lineHeight: 20
+  },
+  chaptersImageContainer: {
+    position: 'relative',
+    width: `${100 / columns}%`,
+    padding: 3,
+    aspectRatio: 0.642857143
   },
   chaptersImage: {
-    width: `${100 / columns}%`,
-    aspectRatio: 0.642857143,
+    position: 'absolute',
+    top: 3,
+    bottom: 3,
+    left: 3,
+    right: 3,
+    width: '100%',
     backgroundColor: '#000'
   },
   chaptersList: {},
@@ -102,8 +125,9 @@ const styles = {
     borderColor: 'rgba(0, 0, 0, 0.3)'
   },
   chapterText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    lineHeight: 16,
+    fontWeight: '900',
     color: '#fff'
   },
   pages: {
@@ -128,8 +152,7 @@ const styles = {
     height: '100%'
   },
   page: {
-    ...dimensions,
-    flex: 1
+    ...dimensions
   },
   pageImage: {
     ...dimensions
@@ -170,12 +193,19 @@ class Manga extends PureComponent {
       <TouchableWithoutFeedback onPress={onSelect}>
         <View style={styles.manga}>
           <Image style={styles.mangaImage} source={{uri: manga.cover}} />
-          <Text style={styles.mangaText}>
-            {manga.title}
-          </Text>
-          <Text style={styles.mangaRelease}>
-            {manga.release.toUpperCase()}
-          </Text>
+          <View style={styles.mangaTextContainer}>
+            <Text style={styles.mangaText}>
+              {manga.title.toUpperCase()}
+            </Text>
+            <Text
+              style={{
+                ...styles.mangaRelease,
+                color: manga.release === 'Today' ? '#fff' : '#aaa'
+              }}
+            >
+              {manga.release.toUpperCase()}
+            </Text>
+          </View>
         </View>
       </TouchableWithoutFeedback>
     )
@@ -200,20 +230,38 @@ class Chapters extends PureComponent {
       <View style={styles.chapters}>
         <View style={styles.chaptersHeader}>
           <TouchableWithoutFeedback onPress={onClose}>
-            <Image style={styles.chaptersImage} source={{uri: manga.cover}} />
+            <View style={styles.chaptersImageContainer}>
+              <Image style={styles.chaptersImage} source={{uri: manga.cover}} />
+            </View>
           </TouchableWithoutFeedback>
           <ScrollView contentContainerStyle={styles.chaptersDescriptionTextContainer} style={styles.chaptersDescription}>
-            {
-              summary
-                ? <Text style={styles.chaptersDescriptionText}>{summary}</Text>
-                : null
-            }
-            {
-              tags.length
-                ? <Text style={styles.chaptersDescriptionText}>{tags.join(', ')}</Text>
-                : null
-            }
-
+            <Text
+              style={{
+                display: 'block',
+                color: '#fff',
+                fontSize: 14,
+                lineHeight: 16,
+                paddingBottom: 8,
+                textAlign: 'left',
+                fontWeight: '900'
+              }}
+            >
+              {manga.title.toUpperCase()}
+            </Text>
+            {tags.length && (
+              <Text
+                style={{
+                  ...styles.chaptersDescriptionText,
+                  display: 'block',
+                  paddingBottom: 8,
+                  fontSize: 10,
+                  lineHeight: 16,
+                  fontWeight: '500'
+                }}>
+                  {tags.join(', ').toUpperCase()}
+                </Text>
+            )}
+            {summary && <Text style={styles.chaptersDescriptionText}>{summary}</Text>}
           </ScrollView>
         </View>
         <FlatList
@@ -236,7 +284,7 @@ class Chapter extends PureComponent {
         <TouchableWithoutFeedback onPress={onSelect}>
           <View style={styles.chapter}>
             <Text style={styles.chapterText}>
-              Chapter {chapter.title}
+              CHAPTER {chapter.title}
             </Text>
           </View>
         </TouchableWithoutFeedback>
@@ -259,20 +307,14 @@ class Pages extends PureComponent {
     return (
       <View style={styles.pages}>
         {
-          pages.length
-          ? (
+          pages.length && (
             <FlatList
               style={styles.pagesList}
               data={pages}
-              indicatorStyle='white'
-              horizontal
               directionalLockEnabled
-              pagingEnabled
-              inverted
               renderItem={this.renderPage}
             />
           )
-          : null
         }
         <Text style={styles.pagesClose} onPress={onClose}>
           CLOSE
@@ -294,28 +336,12 @@ class Page extends PureComponent {
 
   render () {
     const { image } = this.state
-    return (
-      <ScrollView
-        style={styles.page}
-        bouncesZoom
-        centerContent
-        directionalLockEnabled
-        maximumZoomScale={3}
-        showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={false}
-      >
-        {
-          image
-            ? (
-              <Image
-                style={styles.pageImage}
-                resizeMode='contain'
-                source={{uri: image}}
-              />
-            )
-            : null
-        }
-      </ScrollView>
+    return image && (
+      <Image
+        style={styles.pageImage}
+        resizeMode='contain'
+        source={{uri: image}}
+      />
     )
   }
 }
@@ -353,32 +379,28 @@ class App extends PureComponent {
         />
 
         {
-          manga
-            ? (
-              <Chapters
-                manga={manga}
-                chapters={chapters}
-                tags={tags}
-                summary={summary}
-                onClose={this.handleDeselectManga}
-                onSelect={this.handleSelectChapter}
-                onLoad={this.handleLoadedChapters}
-              />
-            )
-            : null
+          manga && (
+            <Chapters
+              manga={manga}
+              chapters={chapters}
+              tags={tags}
+              summary={summary}
+              onClose={this.handleDeselectManga}
+              onSelect={this.handleSelectChapter}
+              onLoad={this.handleLoadedChapters}
+            />
+          )
         }
 
         {
-          chapter
-            ? (
-              <Pages
-                chapter={chapter}
-                pages={pages}
-                onClose={this.handleDeselectChapter}
-                onLoad={this.handleLoadedPages}
-              />
-            )
-            : null
+          chapter && (
+            <Pages
+              chapter={chapter}
+              pages={pages}
+              onClose={this.handleDeselectChapter}
+              onLoad={this.handleLoadedPages}
+            />
+          )
         }
       </View>
     )

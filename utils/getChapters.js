@@ -6,6 +6,7 @@ const getChapters = (url, callback) =>
     .then((response) => response.text())
     .then((text) => cheerio.load(text))
     .then(($) => {
+      const title = $('.manga-detail-top .title').text().trim()
       const chapters = $('.chlist a')
         .map((index, el) => ({
           key: $(el).attr('href'),
@@ -17,7 +18,7 @@ const getChapters = (url, callback) =>
         .map((index, el) => $(el).text().trim())
         .get()
       const summary = $('.manga-summary').text().trim()
-      return { chapters, tags, summary }
+      return { title, chapters, tags, summary }
     })
     .then((d) => callback(d))
 
