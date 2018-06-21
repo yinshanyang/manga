@@ -154,9 +154,7 @@ const styles = {
   page: {
     ...dimensions
   },
-  pageImage: {
-    ...dimensions
-  }
+  pageImage: {}
 }
 
 class Mangas extends PureComponent {
@@ -299,11 +297,11 @@ class Pages extends PureComponent {
   }
 
   renderPage = ({ item }) => (
-    <Page page={item} />
+    <Page direction={this.props.direction} page={item} />
   )
 
   render () {
-    const { chapter, pages, onClose } = this.props
+    const { chapter, pages, direction, onClose, onToggle } = this.props
     return (
       <View style={styles.pages}>
         {
@@ -311,6 +309,8 @@ class Pages extends PureComponent {
             <FlatList
               style={styles.pagesList}
               data={pages}
+              horizontal={direction === 'horizontal'}
+              inverted={direction === 'horizontal'}
               directionalLockEnabled
               renderItem={this.renderPage}
             />
@@ -319,6 +319,19 @@ class Pages extends PureComponent {
         <Text style={styles.pagesClose} onPress={onClose}>
           CLOSE
         </Text>
+        <Text
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            fontSize: 32,
+            color: 'rgba(0, 0, 0, 0)',
+            backgroundColor: 'transparent'
+          }}
+          onPress={onToggle}
+        >
+          DIRECTION
+        </Text>
       </View>
     )
   }
@@ -326,20 +339,33 @@ class Pages extends PureComponent {
 
 class Page extends PureComponent {
   state = {
-    image: null
+    image: null,
+    width: 0,
+    height: 0
   }
 
   componentWillMount () {
     const { page } = this.props
-    getImage(page, (image) => this.setState({ image }))
+    getImage(page, (image) => {
+      this.setState({ image })
+      Image.getSize(image, (width, height) => this.setState({ width, height }))
+    })
   }
 
   render () {
-    const { image } = this.state
+    const { direction } = this.props
+    const { image, width, height } = this.state
+    const size = direction === 'horizontal'
+      ? { height: dimensions.height }
+      : { width: dimensions.width }
     return image && (
       <Image
-        style={styles.pageImage}
-        resizeMode='contain'
+        style={{
+          ...styles.pageImage,
+          ...size,
+          aspectRatio: width / height
+        }}
+        resizeMode='cover'
         source={{uri: image}}
       />
     )
@@ -356,7 +382,8 @@ class App extends PureComponent {
     chapters: [],
     tags: [],
     summary: null,
-    pages: []
+    pages: [],
+    direction: 'horizontal'
   }
 
   componentWillMount () {
@@ -364,7 +391,7 @@ class App extends PureComponent {
   }
 
   render () {
-    const { refreshing, manga, chapter, mangas, chapters, tags, summary, pages } = this.state
+    const { refreshing, manga, chapter, mangas, chapters, tags, summary, pages, direction } = this.state
     return (
       <View
         style={styles.base}
@@ -397,8 +424,10 @@ class App extends PureComponent {
             <Pages
               chapter={chapter}
               pages={pages}
+              direction={direction}
               onClose={this.handleDeselectChapter}
               onLoad={this.handleLoadedPages}
+              onToggle={this.handleToggleDirection}
             />
           )
         }
@@ -449,6 +478,8 @@ class App extends PureComponent {
   handleSelectChapter = (chapter) => () => this.setState({ chapter })
 
   handleDeselectChapter = () => this.setState({chapter: null, pages: []})
+
+  handleToggleDirection = () => this.setState({ direction: this.state.direction === 'horizontal' ? 'vertical' : 'horizontal' })
 }
 
 export default App
