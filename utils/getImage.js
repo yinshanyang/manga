@@ -9,7 +9,7 @@ const getImage = (url, callback) =>
     .then((image) =>
       image
         ? callback(image)
-        : setTimeout(() => getImage(url, callback), 1000)
+        : return null
     )
 
 export default getImage

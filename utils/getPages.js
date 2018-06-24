@@ -14,7 +14,7 @@ const getPages = (url, callback) =>
     .then((pages) =>
       pages.length
         ? callback(pages)
-        : setTimeout(() => getPages(url, callback), 1000)
+        : return null
     )
 
 export default getPages
