@@ -306,7 +306,7 @@ class Pages extends PureComponent {
       <View style={styles.pages}>
         {
           pages.length && (
-            <FlatList
+            <ScrollView
               style={styles.pagesList}
               data={pages}
               horizontal={direction === 'horizontal'}
